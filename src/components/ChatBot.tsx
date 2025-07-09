@@ -1,11 +1,15 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { Send, Bot, User, Loader2, Trash2, Copy, Check, Edit3, RotateCcw, ThumbsUp, ThumbsDown, Download, Save, FolderOpen, MessageSquare } from 'lucide-react';
+import { Send, Bot, User, Loader2, Trash2, Copy, Check, Edit3, RotateCcw, ThumbsUp, ThumbsDown, Download, Save, FolderOpen, MessageSquare, Search, Paperclip, Plus, X } from 'lucide-react';
 import SuggestedPrompts from './SuggestedPrompts';
 import KeyboardShortcuts from './KeyboardShortcuts';
 import TypingIndicator from './TypingIndicator';
+import StreamingTypingIndicator from './StreamingTypingIndicator';
 import DarkModeToggle from './DarkModeToggle';
+import FileUpload from './FileUpload';
+import AdvancedSearch from './AdvancedSearch';
+import { useStreamingChat } from '../hooks/useStreamingChat';
 
 interface Message {
   id: string;
@@ -36,9 +40,50 @@ export default function ChatBot() {
   const [showConversationList, setShowConversationList] = useState(false);
   const [isRegenerating, setIsRegenerating] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
+  const [streamingContent, setStreamingContent] = useState('');
+  const [streamingMessageId, setStreamingMessageId] = useState<string | null>(null);
+  const [showFileUpload, setShowFileUpload] = useState(false);
+  const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
+  const [attachedFile, setAttachedFile] = useState<{ file: File; content: string } | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const editTextareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Initialize streaming chat hook
+  const { sendMessage: sendStreamingMessage, stopStreaming, isStreaming } = useStreamingChat({
+    onMessageStart: (messageId) => {
+      setStreamingMessageId(messageId);
+      setStreamingContent('');
+    },
+    onMessageChunk: (messageId, chunk, fullContent) => {
+      setStreamingContent(fullContent);
+      scrollToBottom();
+    },
+    onMessageComplete: (messageId, fullContent) => {
+      const assistantMessage: Message = {
+        id: messageId,
+        content: fullContent,
+        role: 'assistant',
+        timestamp: new Date(),
+      };
+      setMessages(prev => [...prev, assistantMessage]);
+      setStreamingContent('');
+      setStreamingMessageId(null);
+      setNewMessageId(assistantMessage.id);
+    },
+    onError: (error) => {
+      const errorMsg: Message = {
+        id: Date.now().toString(),
+        content: `❗ Error: ${error}`,
+        role: 'assistant',
+        timestamp: new Date(),
+      };
+      setMessages(prev => [...prev, errorMsg]);
+      setStreamingContent('');
+      setStreamingMessageId(null);
+      setNewMessageId(errorMsg.id);
+    },
+  });
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -232,37 +277,15 @@ export default function ChatBot() {
 
     // If it's a user message, regenerate AI response
     if (editedMessage.role === 'user') {
-      setIsLoading(true);
       try {
-        const response = await fetch('/api/chat', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            messages: updatedMessages.map(m => ({
-              role: m.role,
-              content: m.content,
-            })),
-          }),
-        });
+        const messagesToSend = updatedMessages.map(m => ({
+          role: m.role,
+          content: m.content,
+        }));
 
-        if (!response.ok) {
-          throw new Error('Failed to regenerate response');
-        }
-
-        const data = await response.json();
-        const assistantMessage: Message = {
-          id: Date.now().toString(),
-          content: data.message.content,
-          role: 'assistant',
-          timestamp: new Date(),
-        };
-
-        setNewMessageId(assistantMessage.id);
-        setMessages(prev => [...prev, assistantMessage]);
+        await sendStreamingMessage(messagesToSend);
       } catch (error) {
         console.error('Error regenerating response:', error);
-      } finally {
-        setIsLoading(false);
       }
     }
   };
@@ -275,34 +298,16 @@ export default function ChatBot() {
     setIsRegenerating(true);
     const messagesUpToRegenerate = messages.slice(0, messageIndex);
     
+    // Set messages to state without the old assistant message
+    setMessages(messagesUpToRegenerate);
+    
     try {
-      const response = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          messages: messagesUpToRegenerate.map(m => ({
-            role: m.role,
-            content: m.content,
-          })),
-        }),
-      });
+      const messagesToSend = messagesUpToRegenerate.map(m => ({
+        role: m.role,
+        content: m.content,
+      }));
 
-      if (!response.ok) {
-        throw new Error('Failed to regenerate response');
-      }
-
-      const data = await response.json();
-      const newAssistantMessage: Message = {
-        id: Date.now().toString(),
-        content: data.message.content,
-        role: 'assistant',
-        timestamp: new Date(),
-      };
-
-      // Replace the old message with the new one
-      const updatedMessages = [...messagesUpToRegenerate, newAssistantMessage];
-      setMessages(updatedMessages);
-      setNewMessageId(newAssistantMessage.id);
+      await sendStreamingMessage(messagesToSend);
     } catch (error) {
       console.error('Error regenerating response:', error);
     } finally {
@@ -320,11 +325,19 @@ export default function ChatBot() {
   };
 
   const handleSend = async () => {
-    if (!inputValue.trim() || isLoading) return;
+    if ((!inputValue.trim() && !attachedFile) || isLoading || isStreaming) return;
+
+    let messageContent = inputValue;
+    
+    // Include attached file in the message
+    if (attachedFile) {
+      const fileInfo = `\n\n📎 File: ${attachedFile.file.name}\n${attachedFile.content}`;
+      messageContent = inputValue ? `${inputValue}${fileInfo}` : fileInfo;
+    }
 
     const userMessage: Message = {
       id: Date.now().toString(),
-      content: inputValue,
+      content: messageContent,
       role: 'user',
       timestamp: new Date(),
     };
@@ -332,71 +345,20 @@ export default function ChatBot() {
     setNewMessageId(userMessage.id);
     setMessages(prev => [...prev, userMessage]);
     setInputValue('');
-    setIsLoading(true);
+    setAttachedFile(null); // Clear attached file
     
     // Reset textarea height
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
     }
 
-    try {
-      const response = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          messages: [...messages, userMessage].map(m => ({
-            role: m.role,
-            content: m.content,
-          })),
-        }),
-      });
+    // Use streaming for the response
+    const messagesToSend = [...messages, userMessage].map(m => ({
+      role: m.role,
+      content: m.content,
+    }));
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
-        throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      
-      const assistantMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        content: data.message.content,
-        role: 'assistant',
-        timestamp: new Date(),
-      };
-
-      setNewMessageId(assistantMessage.id);
-      setMessages(prev => [...prev, assistantMessage]);
-    } catch (error: any) {
-      console.error('Error:', error);
-      
-      let errorMessage = 'Sorry, I encountered an error. Please try again.';
-      
-      if (error.message) {
-        if (error.message.includes('API key not configured')) {
-          errorMessage = '🔑 Please add your OpenAI API key to the .env.local file and restart the server.';
-        } else if (error.message.includes('Invalid OpenAI API key')) {
-          errorMessage = '❌ Invalid API key. Please check your OpenAI API key in .env.local file.';
-        } else if (error.message.includes('Rate limit')) {
-          errorMessage = '⏱️ Rate limit exceeded. Please wait a moment and try again.';
-        } else if (error.message.includes('401')) {
-          errorMessage = '🚫 Authentication failed. Please check your OpenAI API key.';
-        } else {
-          errorMessage = `❗ Error: ${error.message}`;
-        }
-      }
-      
-      const errorMsg: Message = {
-        id: (Date.now() + 1).toString(),
-        content: errorMessage,
-        role: 'assistant',
-        timestamp: new Date(),
-      };
-      setNewMessageId(errorMsg.id);
-      setMessages(prev => [...prev, errorMsg]);
-    } finally {
-      setIsLoading(false);
-    }
+    await sendStreamingMessage(messagesToSend);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -442,6 +404,46 @@ export default function ChatBot() {
     }
   };
 
+  // File upload handler
+  const handleFileUpload = (file: File, content: string) => {
+    setAttachedFile({ file, content });
+    setShowFileUpload(false);
+    
+    // Auto-focus the input after file upload
+    if (textareaRef.current) {
+      textareaRef.current.focus();
+    }
+  };
+
+  // Remove attached file
+  const removeAttachedFile = () => {
+    setAttachedFile(null);
+  };
+
+  // Advanced search handlers
+  const handleSearchMessageSelect = (conversationId: string, messageId: string) => {
+    // Load the conversation if it's not the current one
+    if (conversationId !== currentConversationId) {
+      loadConversation(conversationId);
+    }
+    
+    // Close search modal
+    setShowAdvancedSearch(false);
+    
+    // Scroll to the message (simplified - you could add highlighting)
+    setTimeout(() => {
+      const messageElement = document.getElementById(`message-${messageId}`);
+      if (messageElement) {
+        messageElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        // Add a temporary highlight effect
+        messageElement.classList.add('highlight-message');
+        setTimeout(() => {
+          messageElement.classList.remove('highlight-message');
+        }, 3000);
+      }
+    }, 100);
+  };
+
   return (
     <div className="flex flex-col h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
       {/* Header */}
@@ -458,6 +460,13 @@ export default function ChatBot() {
           </div>
           <div className="flex items-center space-x-2">
             <DarkModeToggle onToggle={setIsDarkMode} />
+            <button
+              onClick={() => setShowAdvancedSearch(true)}
+              className="p-3 text-slate-400 hover:text-orange-600 hover:bg-orange-50/80 dark:hover:bg-orange-900/20 rounded-xl transition-all duration-200 hover:scale-105"
+              title="Advanced search"
+            >
+              <Search className="w-5 h-5" />
+            </button>
             <button
               onClick={() => setShowConversationList(!showConversationList)}
               className="conversation-list-button p-3 text-slate-400 hover:text-blue-600 hover:bg-blue-50/80 dark:hover:bg-blue-900/20 rounded-xl transition-all duration-200 hover:scale-105"
@@ -704,7 +713,13 @@ export default function ChatBot() {
           </div>
         ))}
 
-          {isLoading && <TypingIndicator />}
+          {isStreaming && (
+            <StreamingTypingIndicator 
+              content={streamingContent}
+              onStop={stopStreaming}
+              canStop={true}
+            />
+          )}
 
           <div ref={messagesEndRef} />
         </div>
@@ -713,6 +728,29 @@ export default function ChatBot() {
       {/* Input */}
       <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl border-t border-slate-200/60 dark:border-slate-700/60 px-4 sm:px-6 py-6">
         <div className="max-w-4xl mx-auto">
+          {/* Attached File Display */}
+          {attachedFile && (
+            <div className="mb-4 p-3 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <Paperclip className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+                  <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                    {attachedFile.file.name}
+                  </span>
+                  <span className="text-xs text-slate-500 dark:text-slate-400">
+                    ({(attachedFile.file.size / 1024).toFixed(1)}KB)
+                  </span>
+                </div>
+                <button
+                  onClick={removeAttachedFile}
+                  className="p-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors"
+                >
+                  <X className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+                </button>
+              </div>
+            </div>
+          )}
+
           <div className="flex items-end space-x-4">
             <div className="flex-1 relative">
               <textarea
@@ -723,21 +761,49 @@ export default function ChatBot() {
                   adjustTextareaHeight();
                 }}
                 onKeyPress={handleKeyPress}
-                placeholder="Ask me anything..."
+                placeholder={attachedFile ? "Add a message (optional)..." : "Ask me anything..."}
                 className="w-full px-6 py-4 pr-20 bg-white/80 dark:bg-slate-700/80 backdrop-blur-sm border border-slate-200/50 dark:border-slate-600/50 rounded-2xl focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 resize-none min-h-[52px] max-h-32 text-sm font-medium placeholder-slate-400 dark:placeholder-slate-500 text-slate-800 dark:text-slate-200 shadow-lg shadow-slate-500/5 dark:shadow-slate-900/20 transition-all duration-200"
                 rows={1}
-                disabled={isLoading}
+                disabled={isLoading || isStreaming}
                 style={{ overflow: 'hidden' }}
               />
-              <button
-                onClick={handleSend}
-                disabled={!inputValue.trim() || isLoading}
-                className="absolute right-2 top-1/2 transform -translate-y-1/2 p-2.5 bg-gradient-to-br from-blue-600 to-indigo-700 text-white rounded-xl hover:from-blue-700 hover:to-indigo-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 hover:scale-105 shadow-lg shadow-blue-500/25 disabled:hover:scale-100"
-              >
-                <Send className="w-4 h-4" />
-              </button>
+              <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex items-center space-x-1">
+                <button
+                  onClick={() => setShowFileUpload(!showFileUpload)}
+                  className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-600 rounded-lg transition-all duration-200 hover:scale-105"
+                  title="Attach file"
+                >
+                  <Paperclip className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={handleSend}
+                  disabled={(!inputValue.trim() && !attachedFile) || isLoading || isStreaming}
+                  className="p-2.5 bg-gradient-to-br from-blue-600 to-indigo-700 text-white rounded-xl hover:from-blue-700 hover:to-indigo-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 hover:scale-105 shadow-lg shadow-blue-500/25 disabled:hover:scale-100"
+                >
+                  <Send className="w-4 h-4" />
+                </button>
+              </div>
             </div>
           </div>
+
+          {/* File Upload Panel */}
+          {showFileUpload && (
+            <div className="mt-4 p-4 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-sm font-medium text-slate-700 dark:text-slate-300">Upload File</h3>
+                <button
+                  onClick={() => setShowFileUpload(false)}
+                  className="p-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors"
+                >
+                  <X className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+                </button>
+              </div>
+              <FileUpload 
+                onFileUpload={handleFileUpload}
+                disabled={isLoading || isStreaming}
+              />
+            </div>
+          )}
           <div className="flex items-center justify-center mt-4 space-x-6">
             <p className="text-xs text-slate-500 dark:text-slate-400 font-medium hidden sm:block">
               Press <kbd className="px-2 py-1 bg-slate-100 dark:bg-slate-700 rounded-md text-slate-600 dark:text-slate-300 font-mono text-xs">Enter</kbd> to send • 
