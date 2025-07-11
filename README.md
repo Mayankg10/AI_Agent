@@ -20,6 +20,12 @@ A sleek, modern AI chatbot built with Next.js, Tailwind CSS, and OpenAI's GPT-4o
 - Intelligent responses with context awareness
 - Error handling and rate limit management
 
+### 🖼️ **New Features**
+- Dynamic AI Avatar with Emotions
+- Multiple Conversation Themes
+- Advanced Search and Navigation
+- Personalized Chat Experience
+
 ### 🚀 **User Experience**
 - Suggested conversation starters
 - Auto-resizing input field

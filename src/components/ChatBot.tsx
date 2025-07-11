@@ -9,6 +9,8 @@ import StreamingTypingIndicator from './StreamingTypingIndicator';
 import DarkModeToggle from './DarkModeToggle';
 import FileUpload from './FileUpload';
 import AdvancedSearch from './AdvancedSearch';
+import AvatarWithEmotions, { detectMessageEmotion } from './AvatarWithEmotions';
+import ThemeSelector, { themeConfig } from './ThemeSelector';
 import { useStreamingChat } from '../hooks/useStreamingChat';
 
 interface Message {
@@ -48,6 +50,10 @@ export default function ChatBot() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const editTextareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Theme and Emotion State
+  const [currentTheme, setCurrentTheme] = useState<'default' | 'neon' | 'retro' | 'nature' | 'dark' | 'light' | 'minimal' | 'gaming'>('default');
+  const [currentEmotion, setCurrentEmotion] = useState<'neutral' | 'happy' | 'thinking' | 'excited' | 'helpful' | 'creative' | 'energetic' | 'sleepy' | 'smart' | 'joyful' | 'confused' | 'loving'>('neutral');
 
   // Initialize streaming chat hook
   const { sendMessage: sendStreamingMessage, stopStreaming, isStreaming } = useStreamingChat({
@@ -91,6 +97,18 @@ export default function ChatBot() {
 
   useEffect(() => {
     scrollToBottom();
+    
+    // Detect emotion from the latest message
+    if (messages.length > 0) {
+      const lastMessage = messages[messages.length - 1];
+      if (lastMessage.role === 'user') {
+        const detectedEmotion = detectMessageEmotion(lastMessage.content);
+        setCurrentEmotion(detectedEmotion);
+      } else if (lastMessage.role === 'assistant') {
+        const detectedEmotion = detectMessageEmotion(lastMessage.content);
+        setCurrentEmotion(detectedEmotion);
+      }
+    }
   }, [messages]);
 
   useEffect(() => {
@@ -445,9 +463,9 @@ export default function ChatBot() {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+    <div className={`flex flex-col h-screen ${themeConfig[currentTheme]?.background || 'bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900'}`}>
       {/* Header */}
-      <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl border-b border-slate-200/60 dark:border-slate-700/60 px-4 sm:px-6 py-6 shadow-sm">
+      <div className={`${themeConfig[currentTheme]?.header || 'bg-white/80 dark:bg-slate-800/80'} backdrop-blur-xl border-b border-slate-200/60 dark:border-slate-700/60 px-4 sm:px-6 py-6 shadow-sm`}>
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/25">
@@ -459,6 +477,7 @@ export default function ChatBot() {
             </div>
           </div>
           <div className="flex items-center space-x-2">
+            <ThemeSelector currentTheme={currentTheme} onThemeChange={setCurrentTheme} />
             <DarkModeToggle onToggle={setIsDarkMode} />
             <button
               onClick={() => setShowAdvancedSearch(true)}
@@ -555,9 +574,8 @@ export default function ChatBot() {
           <div className="flex flex-col justify-center items-center h-full min-h-0">
             <div className="text-center max-w-2xl mx-auto animate-fade-in">
               <div className="relative mb-6">
-                <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-3xl flex items-center justify-center mx-auto shadow-2xl shadow-blue-500/25">
-                  <Bot className="w-8 h-8 text-white" />
-                  <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white animate-pulse" />
+                <div className="mx-auto w-fit">
+                  <AvatarWithEmotions emotion="neutral" size="large" theme={currentTheme} />
                 </div>
               </div>
               <h3 className="text-2xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 dark:from-slate-100 dark:to-slate-300 bg-clip-text text-transparent mb-3">
@@ -586,23 +604,29 @@ export default function ChatBot() {
               }`}
             >
               <div
-                className={`w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg ${
+                className={`flex items-center justify-center flex-shrink-0 ${
                   message.role === 'user' 
-                    ? 'bg-gradient-to-br from-blue-600 to-indigo-700 ml-4 shadow-blue-500/25' 
-                    : 'bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-600 mr-4 shadow-slate-500/10 dark:shadow-slate-900/20'
+                    ? 'ml-4' 
+                    : 'mr-4'
                 }`}
               >
                 {message.role === 'user' ? (
-                  <User className="w-5 h-5 text-white" />
+                  <div className="w-10 h-10 rounded-2xl flex items-center justify-center bg-gradient-to-br from-blue-600 to-indigo-700 shadow-lg shadow-blue-500/25">
+                    <User className="w-5 h-5 text-white" />
+                  </div>
                 ) : (
-                  <Bot className="w-5 h-5 text-slate-600 dark:text-slate-300" />
+                  <AvatarWithEmotions 
+                    emotion={detectMessageEmotion(message.content)} 
+                    size="medium" 
+                    theme={currentTheme} 
+                  />
                 )}
               </div>
               <div
                 className={`rounded-3xl px-6 py-4 shadow-lg backdrop-blur-sm ${
                   message.role === 'user'
-                    ? 'bg-gradient-to-br from-blue-600 to-indigo-700 text-white shadow-blue-500/25'
-                    : 'bg-white/80 dark:bg-slate-800/80 text-slate-800 dark:text-slate-200 border border-slate-200/50 dark:border-slate-700/50 shadow-slate-500/10 dark:shadow-slate-900/20'
+                    ? `${themeConfig[currentTheme]?.messageUser || 'bg-gradient-to-br from-blue-600 to-indigo-700 shadow-blue-500/25'} text-white`
+                    : `${themeConfig[currentTheme]?.messageBot || 'bg-white/80 dark:bg-slate-800/80 border border-slate-200/50 dark:border-slate-700/50 shadow-slate-500/10 dark:shadow-slate-900/20'} text-slate-800 dark:text-slate-200`
                 }`}
               >
                 {editingMessageId === message.id ? (
@@ -726,7 +750,7 @@ export default function ChatBot() {
       </div>
 
       {/* Input */}
-      <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl border-t border-slate-200/60 dark:border-slate-700/60 px-4 sm:px-6 py-6">
+      <div className={`${themeConfig[currentTheme]?.input || 'bg-white/80 dark:bg-slate-800/80'} backdrop-blur-xl border-t border-slate-200/60 dark:border-slate-700/60 px-4 sm:px-6 py-6`}>
         <div className="max-w-4xl mx-auto">
           {/* Attached File Display */}
           {attachedFile && (
@@ -818,6 +842,16 @@ export default function ChatBot() {
       </div>
       
       <KeyboardShortcuts onClearChat={clearChat} onFocusInput={focusInput} />
+      
+      {/* Advanced Search Modal */}
+      {showAdvancedSearch && (
+        <AdvancedSearch 
+          conversations={conversations}
+          isOpen={showAdvancedSearch}
+          onClose={() => setShowAdvancedSearch(false)}
+          onMessageSelect={handleSearchMessageSelect}
+        />
+      )}
     </div>
   );
 }
