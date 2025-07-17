@@ -49,7 +49,8 @@ export async function POST(request: NextRequest) {
         description: null,
         website_url: null,
         logo_url: null,
-        industry: null
+        industry: null,
+        is_active: true
       });
 
       console.log('Business created:', business);

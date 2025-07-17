@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { Bot, MessageCircle, Settings, Zap, Shield, Users, ArrowRight, CheckCircle, PlayCircle, Star, TrendingUp, Globe, Sparkles, User } from 'lucide-react';
 import { useState } from 'react';
+import { FadeIn, SlideIn, ScaleIn, StaggerList, AnimatedCounter, PulseButton, AnimatedIcon } from '../components/Animations';
 
 export default function Home() {
   const [hoveredFeature, setHoveredFeature] = useState<number | null>(null);
@@ -99,71 +100,94 @@ export default function Home() {
       {/* Hero Section */}
       <section className="max-w-6xl mx-auto px-6 py-20">
         <div className="text-center">
-          <div className="inline-flex items-center bg-blue-50 text-blue-600 px-4 py-2 rounded-full text-sm font-medium mb-6">
-            <Sparkles className="w-4 h-4 mr-2" />
-            Trusted by 10,000+ businesses worldwide
-          </div>
-          <h2 className="text-6xl font-bold text-gray-900 mb-6 leading-tight">
-            Transform Your Website with
-            <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent"> AI-Powered</span> Customer Support
-          </h2>
-          <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto leading-relaxed">
-            Boost conversions by 40% and reduce support costs by 70% with our intelligent AI chatbot that never sleeps.
-          </p>
-          <div className="flex justify-center space-x-4 mb-12">
-            <Link href="/widget" className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-8 py-4 rounded-xl font-semibold hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1 flex items-center">
-              <PlayCircle className="w-5 h-5 mr-2" />
-              Watch Demo
-            </Link>
-            <Link href="/auth" className="border-2 border-gray-300 text-gray-700 px-8 py-4 rounded-xl font-semibold hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 flex items-center">
-              Get Started Free
-              <ArrowRight className="w-5 h-5 ml-2" />
-            </Link>
-          </div>
+          <FadeIn delay={200}>
+            <div className="inline-flex items-center bg-blue-50 text-blue-600 px-4 py-2 rounded-full text-sm font-medium mb-6 animate-fade-in">
+              <AnimatedIcon icon={Sparkles} className="w-4 h-4 mr-2" animation="pulse" />
+              Trusted by 10,000+ businesses worldwide
+            </div>
+          </FadeIn>
+          
+          <FadeIn delay={400}>
+            <h2 className="text-6xl font-bold text-gray-900 mb-6 leading-tight animate-fade-in-up">
+              Transform Your Website with
+              <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent animate-pulse-slow"> AI-Powered</span> Customer Support
+            </h2>
+          </FadeIn>
+          
+          <FadeIn delay={600}>
+            <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto leading-relaxed">
+              Boost conversions by 40% and reduce support costs by 70% with our intelligent AI chatbot that never sleeps.
+            </p>
+          </FadeIn>
+          
+          <FadeIn delay={800}>
+            <div className="flex justify-center space-x-4 mb-12">
+              <PulseButton className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-8 py-4 rounded-xl font-semibold">
+                <Link href="/widget" className="flex items-center">
+                  <PlayCircle className="w-5 h-5 mr-2" />
+                  Watch Demo
+                </Link>
+              </PulseButton>
+              <Link href="/auth" className="border-2 border-gray-300 text-gray-700 px-8 py-4 rounded-xl font-semibold hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 flex items-center animate-scale-in">
+                Get Started Free
+                <ArrowRight className="w-5 h-5 ml-2" />
+              </Link>
+            </div>
+          </FadeIn>
           
           {/* Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl mx-auto">
+          <StaggerList className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl mx-auto" staggerDelay={150}>
             {stats.map((stat, index) => (
               <div key={index} className="text-center">
-                <div className="text-3xl font-bold text-gray-900 mb-1">{stat.number}</div>
+                <div className="text-3xl font-bold text-gray-900 mb-1">
+                  {stat.number.includes('%') ? (
+                    <><AnimatedCounter value={parseInt(stat.number)} /><span>%</span></>
+                  ) : (
+                    stat.number
+                  )}
+                </div>
                 <div className="text-sm text-gray-600">{stat.label}</div>
               </div>
             ))}
-          </div>
+          </StaggerList>
         </div>
       </section>
 
       {/* Features */}
       <section className="bg-slate-50 py-20">
         <div className="max-w-6xl mx-auto px-6">
-          <div className="text-center mb-16">
-            <h3 className="text-4xl font-bold text-gray-900 mb-4">
-              Powerful Features for Modern Businesses
-            </h3>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Everything you need to provide exceptional customer support and boost your business growth.
-            </p>
-          </div>
+          <FadeIn>
+            <div className="text-center mb-16">
+              <h3 className="text-4xl font-bold text-gray-900 mb-4">
+                Powerful Features for Modern Businesses
+              </h3>
+              <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+                Everything you need to provide exceptional customer support and boost your business growth.
+              </p>
+            </div>
+          </FadeIn>
+          
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {features.map((feature, index) => {
               const Icon = feature.icon;
               return (
-                <div 
-                  key={index}
-                  className={`bg-white p-6 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer transform hover:-translate-y-2 ${
-                    hoveredFeature === index ? 'ring-2 ring-blue-500' : ''
-                  }`}
-                  onMouseEnter={() => setHoveredFeature(index)}
-                  onMouseLeave={() => setHoveredFeature(null)}
-                >
-                  <div className={`w-16 h-16 ${feature.bgColor} rounded-2xl flex items-center justify-center mb-4 transition-all duration-300`}>
-                    <div className={`w-12 h-12 bg-gradient-to-br ${feature.color} rounded-xl flex items-center justify-center shadow-lg`}>
-                      <Icon className="w-6 h-6 text-white" />
+                <ScaleIn key={index} delay={index * 100}>
+                  <div 
+                    className={`bg-white p-6 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer transform hover:-translate-y-2 animate-fade-in ${
+                      hoveredFeature === index ? 'ring-2 ring-blue-500' : ''
+                    }`}
+                    onMouseEnter={() => setHoveredFeature(index)}
+                    onMouseLeave={() => setHoveredFeature(null)}
+                  >
+                    <div className={`w-16 h-16 ${feature.bgColor} rounded-2xl flex items-center justify-center mb-4 transition-all duration-300 animate-float`}>
+                      <div className={`w-12 h-12 bg-gradient-to-br ${feature.color} rounded-xl flex items-center justify-center shadow-lg`}>
+                        <Icon className="w-6 h-6 text-white" />
+                      </div>
                     </div>
+                    <h4 className="text-xl font-semibold text-gray-900 mb-2">{feature.title}</h4>
+                    <p className="text-gray-600 leading-relaxed">{feature.description}</p>
                   </div>
-                  <h4 className="text-xl font-semibold text-gray-900 mb-2">{feature.title}</h4>
-                  <p className="text-gray-600 leading-relaxed">{feature.description}</p>
-                </div>
+                </ScaleIn>
               );
             })}
           </div>

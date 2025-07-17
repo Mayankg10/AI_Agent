@@ -181,3 +181,67 @@ body {
 .gaming-glow {
   box-shadow: 0 0 20px rgba(239, 68, 68, 0.5);
 }
+
+/* Layout-stable animations to prevent layout shifts */
+.animate-scale-in {
+  animation: scale-in 0.5s ease-out;
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+/* Prevent layout shifts during animations */
+.animation-container {
+  contain: layout style;
+  will-change: transform, opacity;
+}
+
+/* Smooth animation performance */
+.animate-fade-in,
+.animate-fade-in-up,
+.animate-slide-in-right,
+.animate-slide-in-left,
+.animate-scale-in {
+  backface-visibility: hidden;
+  perspective: 1000px;
+  transform-style: preserve-3d;
+}
+
+/* Reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-in,
+  .animate-fade-in-up,
+  .animate-slide-in-right,
+  .animate-slide-in-left,
+  .animate-scale-in,
+  .animate-float {
+    animation: none;
+  }
+  
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

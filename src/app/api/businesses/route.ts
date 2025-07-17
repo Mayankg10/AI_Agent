@@ -43,7 +43,8 @@ export async function POST(request: NextRequest) {
       description: description || null,
       website_url: website_url || null,
       logo_url: null,
-      industry: industry || null
+      industry: industry || null,
+      is_active: true
     };
 
     const business = await createBusiness(businessData);

@@ -212,7 +212,7 @@ function App() {
         {/* Hero Section */}
         <div className="text-center mb-12">
           <div className="inline-flex items-center bg-blue-50 text-blue-600 px-4 py-2 rounded-full text-sm font-medium mb-4">
-            <Sparkles className="w-4 h-4 mr-2" />
+            <Sparkles className="w-4 h-4 mr-2 animate-pulse" />
             Interactive Demo
           </div>
           <h2 className="text-4xl font-bold text-gray-900 mb-4">
@@ -234,7 +234,7 @@ function App() {
               <button
                 key={index}
                 onClick={() => setConfig(prev => ({ ...prev, ...preset.config }))}
-                className="text-left p-4 rounded-xl border-2 border-gray-200 hover:border-blue-500 transition-colors group"
+                className="text-left p-4 rounded-xl border-2 border-gray-200 hover:border-blue-500 transition-all duration-300 group hover:shadow-md hover:scale-105"
               >
                 <div className="flex items-center justify-between mb-2">
                   <h4 className="font-medium text-gray-800">{preset.name}</h4>
@@ -378,174 +378,174 @@ function App() {
             </div>
           </div>
           
-          {/* Preview and Code Panel */}
-          <div className="lg:col-span-2">
-            <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
-              {/* Tabs */}
-              <div className="border-b border-gray-200">
-                <nav className="flex space-x-8 px-6" aria-label="Tabs">
-                  <button
-                    onClick={() => setActiveTab('preview')}
-                    className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                      activeTab === 'preview'
-                        ? 'border-blue-500 text-blue-600'
-                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                    }`}
-                  >
-                    <Eye className="w-4 h-4 inline mr-2" />
-                    Preview
-                  </button>
-                  <button
-                    onClick={() => setActiveTab('code')}
-                    className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                      activeTab === 'code'
-                        ? 'border-blue-500 text-blue-600'
-                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                    }`}
-                  >
-                    <Code className="w-4 h-4 inline mr-2" />
-                    Integration Code
-                  </button>
-                </nav>
-              </div>
-              
-              {/* Tab Content */}
-              <div className="p-6">
-                {activeTab === 'preview' && (
-                  <div className="space-y-6">
-                    {/* Device Toggle */}
-                    <div className="flex items-center justify-between">
-                      <h3 className="text-lg font-semibold text-gray-800">Live Preview</h3>
-                      <div className="flex items-center space-x-2 bg-gray-100 rounded-lg p-1">
-                        <button
-                          onClick={() => setDemoDevice('desktop')}
-                          className={`p-2 rounded-md ${demoDevice === 'desktop' ? 'bg-white shadow-sm' : 'text-gray-600'}`}
-                        >
-                          <Monitor className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => setDemoDevice('tablet')}
-                          className={`p-2 rounded-md ${demoDevice === 'tablet' ? 'bg-white shadow-sm' : 'text-gray-600'}`}
-                        >
-                          <Tablet className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => setDemoDevice('mobile')}
-                          className={`p-2 rounded-md ${demoDevice === 'mobile' ? 'bg-white shadow-sm' : 'text-gray-600'}`}
-                        >
-                          <Smartphone className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </div>
-                    
-                    {/* Device Preview */}
-                    <div className="flex justify-center">
-                      <div 
-                        className="bg-gray-50 rounded-xl p-8 relative overflow-hidden border-2 border-gray-200 transition-all duration-300"
-                        style={{
-                          width: deviceSizes[demoDevice].width,
-                          height: deviceSizes[demoDevice].height,
-                          maxWidth: '100%'
-                        }}
+        {/* Preview and Code Panel */}
+        <div className="lg:col-span-2">
+          <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+            {/* Tabs */}
+            <div className="border-b border-gray-200">
+              <nav className="flex space-x-8 px-6" aria-label="Tabs">
+                <button
+                  onClick={() => setActiveTab('preview')}
+                  className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+                    activeTab === 'preview'
+                      ? 'border-blue-500 text-blue-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  }`}
+                >
+                  <Eye className="w-4 h-4 inline mr-2" />
+                  Preview
+                </button>
+                <button
+                  onClick={() => setActiveTab('code')}
+                  className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+                    activeTab === 'code'
+                      ? 'border-blue-500 text-blue-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  }`}
+                >
+                  <Code className="w-4 h-4 inline mr-2" />
+                  Integration Code
+                </button>
+              </nav>
+            </div>
+            
+            {/* Tab Content */}
+            <div className="p-6">
+              {activeTab === 'preview' && (
+                <div className="space-y-6">
+                  {/* Device Toggle */}
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-semibold text-gray-800">Live Preview</h3>
+                    <div className="flex items-center space-x-2 bg-gray-100 rounded-lg p-1">
+                      <button
+                        onClick={() => setDemoDevice('desktop')}
+                        className={`p-2 rounded-md ${demoDevice === 'desktop' ? 'bg-white shadow-sm' : 'text-gray-600'}`}
                       >
-                        {/* Mock Website Content */}
-                        <div className="h-full flex flex-col items-center justify-center space-y-6">
-                          <div className="text-center">
-                            <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                              <Globe className="w-8 h-8 text-white" />
-                            </div>
-                            <h4 className="text-xl font-semibold text-gray-800 mb-2">Your Website</h4>
-                            <p className="text-gray-600 text-sm">
-                              This is how the chatbot widget will appear on your website
-                            </p>
+                        <Monitor className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => setDemoDevice('tablet')}
+                        className={`p-2 rounded-md ${demoDevice === 'tablet' ? 'bg-white shadow-sm' : 'text-gray-600'}`}
+                      >
+                        <Tablet className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => setDemoDevice('mobile')}
+                        className={`p-2 rounded-md ${demoDevice === 'mobile' ? 'bg-white shadow-sm' : 'text-gray-600'}`}
+                      >
+                        <Smartphone className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                  
+                  {/* Device Preview */}
+                  <div className="flex justify-center">
+                    <div 
+                      className="bg-gray-50 rounded-xl p-8 relative overflow-hidden border-2 border-gray-200 transition-all duration-300"
+                      style={{
+                        width: deviceSizes[demoDevice].width,
+                        height: deviceSizes[demoDevice].height,
+                        maxWidth: '100%'
+                      }}
+                    >
+                      {/* Mock Website Content */}
+                      <div className="h-full flex flex-col items-center justify-center space-y-6">
+                        <div className="text-center">
+                          <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                            <Globe className="w-8 h-8 text-white" />
                           </div>
-                          
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-md">
-                            <div className="bg-white p-4 rounded-lg shadow-sm">
-                              <div className="flex items-center space-x-2 mb-2">
-                                <Zap className="w-4 h-4 text-yellow-500" />
-                                <span className="text-sm font-medium">Fast Response</span>
-                              </div>
-                              <p className="text-xs text-gray-600">AI responds in under 2 seconds</p>
+                          <h4 className="text-xl font-semibold text-gray-800 mb-2">Your Website</h4>
+                          <p className="text-gray-600 text-sm">
+                            This is how the chatbot widget will appear on your website
+                          </p>
+                        </div>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-md">
+                          <div className="bg-white p-4 rounded-lg shadow-sm">
+                            <div className="flex items-center space-x-2 mb-2">
+                              <Zap className="w-4 h-4 text-yellow-500" />
+                              <span className="text-sm font-medium">Fast Response</span>
                             </div>
-                            <div className="bg-white p-4 rounded-lg shadow-sm">
-                              <div className="flex items-center space-x-2 mb-2">
-                                <Shield className="w-4 h-4 text-green-500" />
-                                <span className="text-sm font-medium">Secure</span>
-                              </div>
-                              <p className="text-xs text-gray-600">End-to-end encryption</p>
-                            </div>
+                            <p className="text-xs text-gray-600">AI responds in under 2 seconds</p>
                           </div>
-                          
-                          <div className="text-center">
-                            <p className="text-sm text-gray-500 mb-2">Click the chatbot button to try it!</p>
-                            <div className="inline-flex items-center space-x-2 text-xs text-blue-600">
-                              <MessageCircle className="w-3 h-3" />
-                              <span>Widget positioned: {config.position}</span>
+                          <div className="bg-white p-4 rounded-lg shadow-sm">
+                            <div className="flex items-center space-x-2 mb-2">
+                              <Shield className="w-4 h-4 text-green-500" />
+                              <span className="text-sm font-medium">Secure</span>
                             </div>
+                            <p className="text-xs text-gray-600">End-to-end encryption</p>
+                          </div>
+                        </div>
+                        
+                        <div className="text-center">
+                          <p className="text-sm text-gray-500 mb-2">Click the chatbot button to try it!</p>
+                          <div className="inline-flex items-center space-x-2 text-xs text-blue-600">
+                            <MessageCircle className="w-3 h-3" />
+                            <span>Widget positioned: {config.position}</span>
                           </div>
                         </div>
                       </div>
                     </div>
                   </div>
-                )}
-                
-                {activeTab === 'code' && (
-                  <div className="space-y-6">
-                    <div className="flex items-center justify-between">
-                      <h3 className="text-lg font-semibold text-gray-800">Integration Code</h3>
-                      <div className="flex items-center space-x-2">
-                        <button
-                          onClick={() => copyToClipboard(generateEmbedCode())}
-                          className="flex items-center space-x-2 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
-                        >
-                          {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                          <span>{copied ? 'Copied!' : 'Copy'}</span>
-                        </button>
-                        <button className="flex items-center space-x-2 px-3 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors text-sm">
-                          <Download className="w-4 h-4" />
-                          <span>Download</span>
-                        </button>
-                      </div>
-                    </div>
-                    
-                    <div className="space-y-4">
-                      <div>
-                        <h4 className="font-medium text-gray-800 mb-2">HTML/JavaScript Integration</h4>
-                        <div className="bg-gray-900 text-gray-100 p-4 rounded-lg text-sm font-mono overflow-x-auto">
-                          <pre>{generateEmbedCode()}</pre>
-                        </div>
-                      </div>
-                      
-                      <div>
-                        <h4 className="font-medium text-gray-800 mb-2">React Component</h4>
-                        <div className="bg-gray-900 text-gray-100 p-4 rounded-lg text-sm font-mono overflow-x-auto">
-                          <pre>{generateReactCode()}</pre>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div className="bg-blue-50 rounded-lg p-4">
-                      <h4 className="font-medium text-blue-800 mb-2">Integration Features</h4>
-                      <ul className="text-sm text-blue-700 space-y-1">
-                        <li>• Fully customizable appearance and behavior</li>
-                        <li>• Responsive design that works on all devices</li>
-                        <li>• Real-time AI responses with streaming</li>
-                        <li>• Easy one-script integration</li>
-                        <li>• No external dependencies required</li>
-                        <li>• GDPR compliant and secure</li>
-                      </ul>
+                </div>
+              )}
+              
+              {activeTab === 'code' && (
+                <div className="space-y-6">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-semibold text-gray-800">Integration Code</h3>
+                    <div className="flex items-center space-x-2">
+                      <button
+                        onClick={() => copyToClipboard(generateEmbedCode())}
+                        className="flex items-center space-x-2 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
+                      >
+                        {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                        <span>{copied ? 'Copied!' : 'Copy'}</span>
+                      </button>
+                      <button className="flex items-center space-x-2 px-3 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors text-sm">
+                        <Download className="w-4 h-4" />
+                        <span>Download</span>
+                      </button>
                     </div>
                   </div>
-                )}
-              </div>
+                  
+                  <div className="space-y-4">
+                    <div>
+                      <h4 className="font-medium text-gray-800 mb-2">HTML/JavaScript Integration</h4>
+                      <div className="bg-gray-900 text-gray-100 p-4 rounded-lg text-sm font-mono overflow-x-auto">
+                        <pre>{generateEmbedCode()}</pre>
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <h4 className="font-medium text-gray-800 mb-2">React Component</h4>
+                      <div className="bg-gray-900 text-gray-100 p-4 rounded-lg text-sm font-mono overflow-x-auto">
+                        <pre>{generateReactCode()}</pre>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="bg-blue-50 rounded-lg p-4">
+                    <h4 className="font-medium text-blue-800 mb-2">Integration Features</h4>
+                    <ul className="text-sm text-blue-700 space-y-1">
+                      <li>• Fully customizable appearance and behavior</li>
+                      <li>• Responsive design that works on all devices</li>
+                      <li>• Real-time AI responses with streaming</li>
+                      <li>• Easy one-script integration</li>
+                      <li>• No external dependencies required</li>
+                      <li>• GDPR compliant and secure</li>
+                    </ul>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
+      </div>
         
         {/* Features Grid */}
         <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-white rounded-xl p-6 shadow-lg">
+          <div className="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300">
             <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center mb-4">
               <Zap className="w-6 h-6 text-white" />
             </div>
@@ -553,7 +553,7 @@ function App() {
             <p className="text-gray-600 text-sm">Get instant AI responses in under 2 seconds with our optimized infrastructure.</p>
           </div>
           
-          <div className="bg-white rounded-xl p-6 shadow-lg">
+          <div className="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300">
             <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-lg flex items-center justify-center mb-4">
               <Settings className="w-6 h-6 text-white" />
             </div>
@@ -561,7 +561,7 @@ function App() {
             <p className="text-gray-600 text-sm">One-click integration with any website. No coding experience required.</p>
           </div>
           
-          <div className="bg-white rounded-xl p-6 shadow-lg">
+          <div className="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300">
             <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg flex items-center justify-center mb-4">
               <Shield className="w-6 h-6 text-white" />
             </div>
@@ -581,20 +581,20 @@ function App() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <Link 
               href="/auth" 
-              className="bg-white text-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-50 transition-colors flex items-center space-x-2"
+              className="bg-white text-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-50 transition-all duration-200 flex items-center space-x-2 hover:scale-105 transform"
             >
               <span>Get Started Free</span>
             </Link>
             <Link 
               href="/pricing" 
-              className="border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:text-blue-600 transition-colors flex items-center space-x-2"
+              className="border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:text-blue-600 transition-all duration-200 flex items-center space-x-2 hover:scale-105 transform"
             >
               <CreditCard className="w-4 h-4" />
               <span>View Pricing</span>
             </Link>
             <Link 
               href="/" 
-              className="text-blue-100 hover:text-white transition-colors flex items-center space-x-2 text-sm"
+              className="text-blue-100 hover:text-white transition-colors flex items-center space-x-2 text-sm hover:scale-105 transform"
             >
               <Home className="w-4 h-4" />
               <span>Back to Home</span>
