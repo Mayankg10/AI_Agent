@@ -5,7 +5,7 @@ const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 export async function POST(request: NextRequest) {
   try {
-    const { messages } = await request.json();
+    const { messages, businessId } = await request.json();
 
     // Validate input
     if (!messages || !Array.isArray(messages)) {
